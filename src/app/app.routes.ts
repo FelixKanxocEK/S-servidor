@@ -5,12 +5,16 @@ export const routes: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'extensions',
+        redirectTo: '',
     },
     {
         path: '',
         component: ContentLayoutComponent,
         children: [
+            {
+                path: '',
+                loadChildren: () => import('./pages/dashboard/dashboard.module').then(m => m.DashboardModule)
+            },
             {
                 path: '',
                 loadChildren: () => import('./pages/extensions/extensions.module').then(m => m.ExtensionsModule),
@@ -27,6 +31,6 @@ export const routes: Routes = [
     },
     {
         path: '**',
-        redirectTo: 'extensions',
+        redirectTo: '',
     }
 ];
