@@ -1,3 +1,70 @@
-<div>
-  
+<div class="container mt-4">
+    <div class="mb-4">
+        <h2 class="text-center border-bottom">Extensiones teléfonicas</h2>
+    </div>
+    <div class="mt-3">
+        <form>
+            <div class="mb-3 row">
+                <label for="table-filtering-search" class="col-xs-3 col-sm-auto col-form-label">Buscar:</label>
+                <div class="col-xs-3 col-sm-auto">
+                    <input id="table-filtering-search" class="form-control" type="text" [formControl]="filter" />
+                </div>
+            </div>
+        </form>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr class="text-center">
+                <th scope="col">#</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Extensión</th>
+                <th scope="col">Empresa</th>
+                <th scope="col">Departamento</th>
+                <th scope="col">DID salida</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (extension of extensions$ | async; track extension.name; let i = $index) {
+            <tr class="text-center" >
+                <td>
+                    {{extension.extension_id}}
+                </td>
+                <td>
+                    <ngb-highlight [result]="extension.name" [term]="filter.value"/>
+                </td>
+                <td>
+                    <ngb-highlight [result]="extension.extension" [term]="filter.value"/>
+                </td>
+                <td>
+                    <ngb-highlight [result]="extension.contact.organization" [term]="filter.value"/>
+                </td>
+                <td>
+                    <ngb-highlight [result]="extension.contact.location" [term]="filter.value"/>
+                </td>
+                <td>
+                    <ngb-highlight [result]="extension.did_number" [term]="filter.value"/>
+                </td>
+            </tr>
+        } @empty {
+            <tr>
+				<td colspan="6" style="text-align: center">No se encontraron resultados</td>
+			</tr>
+        }
+        </tbody>
+    </table>
+    <!-- <div class="d-flex justify-content-between p-2">
+        <ngb-pagination
+            [collectionSize]="collectionSize"
+            [(page)]="page"
+            [pageSize]="pageSize"
+            (pageChange)="refreshExtensions()"
+        >
+        </ngb-pagination>
+    
+        <select class="form-select" style="width: auto" [(ngModel)]="pageSize" (ngModelChange)="refreshExtensions()">
+            <option [ngValue]="2">2 items per page</option>
+            <option [ngValue]="4">4 items per page</option>
+            <option [ngValue]="6">6 items per page</option>
+        </select>
+    </div> -->
 </div>
