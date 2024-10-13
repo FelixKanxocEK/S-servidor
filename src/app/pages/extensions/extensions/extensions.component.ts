@@ -1,10 +1,7 @@
-import { Component, OnInit, PipeTransform, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ExtensionsService } from '../../../model/extensions.service';
-import { map, Observable, pipe, startWith } from 'rxjs';
-import { FormControl } from '@angular/forms';
 import { Extension, Extensions } from './interfaces/extensions.interface';
-import { DecimalPipe } from '@angular/common';
-// import { NgbdSortableHeader, SortEvent } from './sortable.directive';
+import { ExcelService } from '../../../utils/excel.service';
 
 @Component({
   selector: 'app-extensions',
@@ -12,40 +9,57 @@ import { DecimalPipe } from '@angular/common';
   styleUrl: './extensions.component.scss'
 })
 export class ExtensionsComponent implements OnInit {
-  extensions$!: Observable<Extension[]>;
-	filter = new FormControl('', { nonNullable: true });  
   extensions!: Extensions;
-
-  // @ViewChildren(NgbdSortableHeader) headers!: QueryList<NgbdSortableHeader>;
   // PAGINADOR
-  page = 1;
-	pageSize = 4;
-  // collectionSize = this.extensions.extensions.length;
+  current_page = 1;
+  page_size = 20;
+
+  filtered_extensions: Extension[] = [];
+  paginated_data: Extension[] = [];
+  search_text: string = '';
   
-  constructor(private readonly ExtensionsService: ExtensionsService, private readonly DecimalPipe: DecimalPipe) {
-  }
+  constructor(
+    private readonly ExtensionsService: ExtensionsService, 
+    private readonly ExcelService: ExcelService
+  ) {}
 
   async ngOnInit() {
     this.extensions = await this.ExtensionsService.getExtensions();
-    this.extensions$ = this.filter.valueChanges.pipe(
-			startWith(''),
-			map((text) => this.search(text, this.DecimalPipe)),
-		);
-
-    // this.refreshExtensions();
+    this.filterData();
   }
 
-  search(text: string, pipe: PipeTransform): Extension[] {
-    return this.extensions.extensions.filter((extension_tmp) => {
-      const term = text.toLowerCase();
+  filterData(): void {
+    // Filtrar los datos por el texto de búsqueda
+    this.filtered_extensions = this.extensions.extensions.filter((extension_tmp) => {
+      const term = this.search_text.toLowerCase();
       return (
         extension_tmp.name.toLowerCase().includes(term) || 
         (extension_tmp.contact.organization && extension_tmp.contact.organization.toLowerCase().includes(term)) ||
         (extension_tmp.contact.location && extension_tmp.contact.location.toLowerCase().includes(term)) ||
         (extension_tmp.did_number && extension_tmp.did_number.toLowerCase().includes(term)) ||
-        pipe.transform(extension_tmp.extension_id).includes(term) ||
-        pipe.transform(extension_tmp.extension).includes(term)
+        extension_tmp.extension_id.toString().includes(term) ||
+        extension_tmp.extension.toString().includes(term)
       );
     });
+
+    // Paginar los datos filtrados
+    this.paginateData();
+  }
+
+  paginateData(): void {
+    // Calcular el índice de los datos para la página actual
+    const startIndex = (this.current_page - 1) * this.page_size;
+    const endIndex = startIndex + this.page_size;
+
+    this.paginated_data = this.filtered_extensions.slice(startIndex, endIndex);
+  }
+
+  onPageChange(page: number): void {
+    this.current_page = page;
+    this.paginateData();
+  }
+
+  downloadExcel() {
+    this.ExcelService.exportExtensions(this.extensions.extensions);
   }
 }

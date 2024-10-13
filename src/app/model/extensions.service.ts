@@ -20,7 +20,6 @@ export class ExtensionsService {
       const result = await lastValueFrom(this.HttpClient.get<Extensions>(`${this.UtilsService.API_URL}/extensions`));
 
       if(result) {
-        console.log(result, ' jajaja');
         return result;
       } else {
         return {
@@ -28,9 +27,7 @@ export class ExtensionsService {
           extensions: [],
         };
       }
-
     } catch (error) {
-      console.log(error)
       return {
         cdr: [],
         extensions: [],
